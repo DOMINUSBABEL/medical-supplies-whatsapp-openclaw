@@ -43,9 +43,10 @@ class SessionManager {
     if (!session || (now - session.lastActivity > SESSION_TIMEOUT_MS)) {
       session = {
         jid,
-        flowState: 'ask_user_type',
+        flowState: 'welcome',
         currentCategory: 'welcome',
         employee: null,
+        tempData: {},
         lastActivity: now
       };
       this.sessions.set(jid, session);
@@ -68,9 +69,10 @@ class SessionManager {
   resetSession(jid) {
     const session = {
       jid,
-      flowState: 'ask_user_type',
+      flowState: 'welcome',
       currentCategory: 'welcome',
       employee: null,
+      tempData: {},
       lastActivity: Date.now()
     };
     this.sessions.set(jid, session);
