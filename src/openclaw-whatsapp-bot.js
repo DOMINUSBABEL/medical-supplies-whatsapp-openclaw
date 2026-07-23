@@ -13,6 +13,24 @@ const { runOnboardingWizard } = require('./onboarding-wizard');
 
 const AUTH_FOLDER = path.join(__dirname, '..', 'whatsapp_auth_info');
 
+// COLA DE MENSAJES SECUENCIAL CON TIEMPO DE ESPERA (DELAY 5s) PER-USUARIO
+const messageQueues = new Map();
+
+function enqueueMessage(senderJid, taskFn) {
+  if (!messageQueues.has(senderJid)) {
+    messageQueues.set(senderJid, Promise.resolve());
+  }
+  const currentQueue = messageQueues.get(senderJid);
+  const nextQueue = currentQueue.then(async () => {
+    try {
+      await taskFn();
+    } catch (err) {
+      console.error(`[Queue Error ${senderJid}]:`, err);
+    }
+  });
+  messageQueues.set(senderJid, nextQueue);
+}
+
 async function startOpenClawWhatsAppBot() {
   console.log('\n========================================================================');
   console.log(`🚀 INICIANDO MOTOR WHATSAPP AGENT - ${configManager.get('companyName').toUpperCase()}`);
@@ -52,7 +70,8 @@ async function startOpenClawWhatsAppBot() {
       console.log(`🏢 Empresa: ${configManager.get('companyName')}`);
       console.log(`🤖 Agente: ${configManager.get('botName')}`);
       console.log(`⚙️ Modo de Respuesta: ${configManager.get('autoReplyMode').toUpperCase()}`);
-      console.log(`💬 Escuchando mensajes entrantes en tiempo real con soporte de imágenes y emojis...\n`);
+      console.log(`⏱️ Delay entre mensajes: 5 Segundos (Simulación Humana & Anti-solapamiento)`);
+      console.log(`💬 Escuchando mensajes entrantes en tiempo real con imágenes y emojis...\n`);
     }
   });
 
@@ -84,30 +103,46 @@ async function startOpenClawWhatsAppBot() {
 
         console.log(`📩 Mensaje recibido de [${cleanSenderNumber}]: "${messageText}"`);
 
-        // Procesar flujo en la máquina de estados
-        const responseObj = processWhatsAppMessage(senderJid, messageText);
-        const textContent = typeof responseObj === 'string' ? responseObj : responseObj.text;
-        const imageUrl = typeof responseObj === 'object' ? responseObj.imageUrl : null;
+        // Encolar y procesar con delay estricto de 5 segundos para evitar solapamientos
+        enqueueMessage(senderJid, async () => {
+          // 1. Mostrar estado "escribiendo..." en WhatsApp
+          try {
+            await sock.sendPresenceUpdate('composing', senderJid);
+          } catch (e) {}
 
-        // Si el modo es manual, solo imprimir la respuesta sugerida
-        if (configManager.get('autoReplyMode') === 'manual') {
-          console.log(`🖐️ [Modo Manual Active] Respuesta generada para [${cleanSenderNumber}]:\n${textContent}\n`);
-          continue;
-        }
+          // 2. Esperar 5 segundos exactos (delay solicitado)
+          await new Promise(resolve => setTimeout(resolve, 5000));
 
-        // Responder en WhatsApp con Imagen o Texto según corresponda
-        if (imageUrl) {
-          await sock.sendMessage(senderJid, {
-            image: { url: imageUrl },
-            caption: textContent
-          }, { quoted: msg });
-          console.log(`🖼️ Logo e imagen corporativa enviada a [${cleanSenderNumber}]`);
-        } else {
-          await sock.sendMessage(senderJid, {
-            text: textContent
-          }, { quoted: msg });
-        }
-        console.log(`🤖 Respuesta enviada exitosamente a [${cleanSenderNumber}]`);
+          // 3. Procesar en la máquina de estados
+          const responseObj = processWhatsAppMessage(senderJid, messageText);
+          const textContent = typeof responseObj === 'string' ? responseObj : responseObj.text;
+          const imageUrl = typeof responseObj === 'object' ? responseObj.imageUrl : null;
+
+          // Si el modo es manual, solo imprimir la respuesta sugerida
+          if (configManager.get('autoReplyMode') === 'manual') {
+            console.log(`🖐️ [Modo Manual Active] Respuesta generada para [${cleanSenderNumber}]:\n${textContent}\n`);
+            return;
+          }
+
+          // 4. Enviar mensaje por WhatsApp
+          if (imageUrl) {
+            await sock.sendMessage(senderJid, {
+              image: { url: imageUrl },
+              caption: textContent
+            }, { quoted: msg });
+            console.log(`🖼️ Logo e imagen enviada a [${cleanSenderNumber}] (5s delay)`);
+          } else {
+            await sock.sendMessage(senderJid, {
+              text: textContent
+            }, { quoted: msg });
+            console.log(`🤖 Respuesta enviada a [${cleanSenderNumber}] (5s delay)`);
+          }
+
+          // 5. Restablecer estado de presencia
+          try {
+            await sock.sendPresenceUpdate('paused', senderJid);
+          } catch (e) {}
+        });
       }
     } catch (err) {
       console.error('[OpenClaw Bot] Error procesando mensaje de WhatsApp:', err);
@@ -132,11 +167,14 @@ function startSimulator() {
         rl.close();
         process.exit(0);
       }
-      const res = processWhatsAppMessage(TEST_JID, ans);
-      const text = typeof res === 'string' ? res : res.text;
-      const img = typeof res === 'object' && res.imageUrl ? ` [🖼️ Imagen: ${res.imageUrl}]` : '';
-      console.log('\n🤖 BOT WHATSAPP' + img + ':\n' + text + '\n');
-      promptUser();
+      console.log('⏳ (Simulando delay de 5 segundos en consola...)');
+      setTimeout(() => {
+        const res = processWhatsAppMessage(TEST_JID, ans);
+        const text = typeof res === 'string' ? res : res.text;
+        const img = typeof res === 'object' && res.imageUrl ? ` [🖼️ Imagen: ${res.imageUrl}]` : '';
+        console.log('\n🤖 BOT WHATSAPP' + img + ':\n' + text + '\n');
+        promptUser();
+      }, 5000);
     });
   }
   promptUser();
