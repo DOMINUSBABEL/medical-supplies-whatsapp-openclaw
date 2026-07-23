@@ -52,7 +52,7 @@ async function startOpenClawWhatsAppBot() {
       console.log(`🏢 Empresa: ${configManager.get('companyName')}`);
       console.log(`🤖 Agente: ${configManager.get('botName')}`);
       console.log(`⚙️ Modo de Respuesta: ${configManager.get('autoReplyMode').toUpperCase()}`);
-      console.log(`💬 Escuchando mensajes entrantes en tiempo real...\n`);
+      console.log(`💬 Escuchando mensajes entrantes en tiempo real con soporte de imágenes y emojis...\n`);
     }
   });
 
@@ -71,7 +71,7 @@ async function startOpenClawWhatsAppBot() {
         // Verificar autorización según la configuración de Onboarding (All vs Whitelist)
         const cleanSenderNumber = senderJid.replace('@s.whatsapp.net', '');
         if (!configManager.isNumberAuthorized(cleanSenderNumber)) {
-          console.log(`🛡️ [Filtro Whitelist] Mensaje ignorado de [${cleanSenderNumber}] (No está en la lista blanca de números autorizados).`);
+          console.log(`🛡️ [Filtro Whitelist] Mensaje ignorado de [${cleanSenderNumber}] (No está en la lista blanca).`);
           continue;
         }
 
@@ -85,17 +85,29 @@ async function startOpenClawWhatsAppBot() {
         console.log(`📩 Mensaje recibido de [${cleanSenderNumber}]: "${messageText}"`);
 
         // Procesar flujo en la máquina de estados
-        const responseText = processWhatsAppMessage(senderJid, messageText);
+        const responseObj = processWhatsAppMessage(senderJid, messageText);
+        const textContent = typeof responseObj === 'string' ? responseObj : responseObj.text;
+        const imageUrl = typeof responseObj === 'object' ? responseObj.imageUrl : null;
 
         // Si el modo es manual, solo imprimir la respuesta sugerida
         if (configManager.get('autoReplyMode') === 'manual') {
-          console.log(`🖐️ [Modo Manual Active] Respuesta generada para [${cleanSenderNumber}]:\n${responseText}\n`);
+          console.log(`🖐️ [Modo Manual Active] Respuesta generada para [${cleanSenderNumber}]:\n${textContent}\n`);
           continue;
         }
 
-        // Responder en WhatsApp en vivo
-        await sock.sendMessage(senderJid, { text: responseText }, { quoted: msg });
-        console.log(`🤖 Respuesta enviada a [${cleanSenderNumber}]`);
+        // Responder en WhatsApp con Imagen o Texto según corresponda
+        if (imageUrl) {
+          await sock.sendMessage(senderJid, {
+            image: { url: imageUrl },
+            caption: textContent
+          }, { quoted: msg });
+          console.log(`🖼️ Logo e imagen corporativa enviada a [${cleanSenderNumber}]`);
+        } else {
+          await sock.sendMessage(senderJid, {
+            text: textContent
+          }, { quoted: msg });
+        }
+        console.log(`🤖 Respuesta enviada exitosamente a [${cleanSenderNumber}]`);
       }
     } catch (err) {
       console.error('[OpenClaw Bot] Error procesando mensaje de WhatsApp:', err);
@@ -104,7 +116,7 @@ async function startOpenClawWhatsAppBot() {
 }
 
 function startSimulator() {
-  const { processWhatsAppMessage, getWelcomeMessage } = require('./state-machine');
+  const { processWhatsAppMessage, getM01Welcome } = require('./state-machine');
   const readline = require('readline');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const TEST_JID = '573001234567@s.whatsapp.net';
@@ -112,7 +124,7 @@ function startSimulator() {
   console.log('\n===============================================================');
   console.log('📱 SIMULADOR DE CONSOLA - AGENTE WHATSAPP');
   console.log('===============================================================\n');
-  console.log('🤖 BOT WHATSAPP:\n' + getWelcomeMessage() + '\n');
+  console.log('🤖 BOT WHATSAPP:\n' + getM01Welcome() + '\n');
 
   function promptUser() {
     rl.question('👤 TÚ: ', (ans) => {
@@ -120,8 +132,10 @@ function startSimulator() {
         rl.close();
         process.exit(0);
       }
-      const reply = processWhatsAppMessage(TEST_JID, ans);
-      console.log('\n🤖 BOT WHATSAPP:\n' + reply + '\n');
+      const res = processWhatsAppMessage(TEST_JID, ans);
+      const text = typeof res === 'string' ? res : res.text;
+      const img = typeof res === 'object' && res.imageUrl ? ` [🖼️ Imagen: ${res.imageUrl}]` : '';
+      console.log('\n🤖 BOT WHATSAPP' + img + ':\n' + text + '\n');
       promptUser();
     });
   }
