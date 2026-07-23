@@ -1,10 +1,10 @@
 const sessionManager = require('./session-manager');
 
-// 3. MOCK DATA ACCORDING TO SPECIFICATION (§3)
+// 3. MOCK DATA ACCORDING TO SPECIFICATION & REAL CORPORATE INFO (mscorp.com.co)
 const MOCK_COLABORADORES = {
-  '1010101010': { nombre: 'Laura Martínez', cargo: 'Analista de Compras', venceContrato: '31/12/2026', vacacionesDias: 12, fechaCorte: '30/11/2026', evaluacion: 'Sobresaliente (92/100)', monedasCultura: 8, activo: true },
-  '2020202020': { nombre: 'Carlos Ramírez', cargo: 'Auxiliar de Bodega', venceContrato: '15/08/2026', vacacionesDias: 5, fechaCorte: '30/11/2026', evaluacion: 'Satisfactorio (81/100)', monedasCultura: 8, activo: true },
-  '3030303030': { nombre: 'Andrea Gómez', cargo: 'Coordinadora Comercial', venceContrato: 'Indefinido', vacacionesDias: 20, fechaCorte: '30/11/2026', evaluacion: 'Excelente (96/100)', monedasCultura: 8, activo: true },
+  '1010101010': { nombre: 'Laura Martínez', cargo: 'Analista de Compras Insumos Médicos', venceContrato: '31/12/2026', vacacionesDias: 12, fechaCorte: '30/11/2026', evaluacion: 'Sobresaliente (92/100)', monedasCultura: 8, activo: true },
+  '2020202020': { nombre: 'Carlos Ramírez', cargo: 'Auxiliar de Bodega Dispositivos', venceContrato: '15/08/2026', vacacionesDias: 5, fechaCorte: '30/11/2026', evaluacion: 'Satisfactorio (81/100)', monedasCultura: 8, activo: true },
+  '3030303030': { nombre: 'Andrea Gómez', cargo: 'Coordinadora Comercial MS Corp', venceContrato: 'Indefinido', vacacionesDias: 20, fechaCorte: '30/11/2026', evaluacion: 'Excelente (96/100)', monedasCultura: 8, activo: true },
   '4040404040': { nombre: 'Colaborador Inactivo', cargo: 'Sin cargo', activo: false }
 };
 
@@ -14,8 +14,8 @@ const MOCK_EXCOLABORADORES = {
 };
 
 const MOCK_CANDIDATOS = {
-  '7070707070': { nombre: 'Diana Salazar', vacante: 'Analista de Talento Humano', activo: true, etapa: 'Pruebas técnicas' },
-  '8080808080': { nombre: 'Sebastián Ortiz', vacante: 'Coordinador Logístico', activo: false, etapa: 'Proceso finalizado' }
+  '7070707070': { nombre: 'Diana Salazar', vacante: 'Analista de Talento Humano MS Corp', activo: true, etapa: 'Pruebas técnicas' },
+  '8080808080': { nombre: 'Sebastián Ortiz', vacante: 'Coordinador Logístico de Dispositivos', activo: false, etapa: 'Proceso finalizado' }
 };
 
 // 5. RADICADO GENERATOR (§5)
@@ -74,7 +74,7 @@ function processWhatsAppMessage(senderJid, textInput) {
 
     if (text === '2' || lower.includes('externo') || lower.includes('candidato') || lower.includes('excolaborador')) {
       sessionManager.updateSession(senderJid, { flowState: 'ext_consent', profile: 'externo' });
-      return `Bienvenido. Para gestionar tu solicitud, Medical Supplies requiere procesar tus datos bajo nuestra *política de tratamiento de datos personales* (Ley 1581 de 2012).\n\n¿Autorizas el tratamiento de tus datos para continuar?\n\n*1.* Sí, autorizo\n*2.* No autorizo`;
+      return `Bienvenido. Para gestionar tu solicitud, Medical Supplies Corp (mscorp.com.co) requiere procesar tus datos bajo nuestra *política de tratamiento de datos personales* (Ley 1581 de 2012).\n\n¿Autorizas el tratamiento de tus datos para continuar?\n\n*1.* Sí, autorizo\n*2.* No autorizo`;
     }
 
     return getM01Welcome();
@@ -94,7 +94,7 @@ function processWhatsAppMessage(senderJid, textInput) {
 
     if (!emp || !emp.activo) {
       sessionManager.updateSession(senderJid, { flowState: 'not_active' });
-      return `No encontramos un colaborador activo asociado al número de cédula ingresado.\nPor seguridad, este canal está habilitado únicamente para *empleados activos* de Medical Supplies.\nSi consideras que esto es un error, por favor comunícate directamente con el área de *Talento Humano*.`;
+      return `No encontramos un colaborador activo asociado al número de cédula ingresado.\nPor seguridad, este canal está habilitado únicamente para *empleados activos* de Medical Supplies Corp (mscorp.com.co).\nSi consideras que esto es un error, por favor comunícate directamente con el área de *Talento Humano*.`;
     }
 
     sessionManager.updateSession(senderJid, {
@@ -115,7 +115,7 @@ function processWhatsAppMessage(senderJid, textInput) {
 
     if (text === '2' || lower.includes('no')) {
       sessionManager.updateSession(senderJid, { flowState: 'consent_denied' });
-      return `Entendemos tu decisión.\nPara proteger tus datos personales, no podremos continuar con la atención por este canal.\nSi necesitas apoyo, puedes comunicarte directamente con el área de *Talento Humano* de Medical Supplies.\nGracias por contactarnos.`;
+      return `Entendemos tu decisión.\nPara proteger tus datos personales, no podremos continuar con la atención por este canal.\nSi necesitas apoyo, puedes comunicarte directamente con el área de *Talento Humano* de Medical Supplies Corp.\nGracias por contactarnos.`;
     }
 
     return `Por favor selecciona una opción válida:\n\n*1.* Sí, autorizo\n*2.* No autorizo`;
@@ -160,7 +160,6 @@ function processWhatsAppMessage(senderJid, textInput) {
   // -------------------------------------------------------------
   if (state === 'menu_consultas') {
     const name = session.employee?.nombre || 'Colaborador';
-    const cedula = session.employee?.cedula || '1010101010';
 
     if (text === '1' || lower.includes('comprobante')) {
       sessionManager.updateSession(senderJid, { flowState: 'sub_comprobante' });
@@ -187,7 +186,7 @@ function processWhatsAppMessage(senderJid, textInput) {
 
     if (text === '5' || lower.includes('planilla')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `✅ Tu planilla de seguridad social está disponible para descarga:\n🔗 https://medicalsupplies.example.com/planilla/${cedula}.pdf\n\n` + getAfterActionPrompt();
+      return `✅ Tu planilla de seguridad social está disponible para descarga:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
 
     if (text === '6' || lower.includes('cesantias')) {
@@ -214,10 +213,9 @@ function processWhatsAppMessage(senderJid, textInput) {
 
   // sub_comprobante
   if (state === 'sub_comprobante') {
-    const cedula = session.employee?.cedula || '1010101010';
     if (text === '1' || lower.includes('ultimo')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `📄 Tu desprendible de nómina está disponible:\n🔗 https://medicalsupplies.example.com/nomina/${cedula}-último.pdf\n\n` + getAfterActionPrompt();
+      return `📄 Tu desprendible de nómina está disponible en el portal oficial:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '2' || lower.includes('mes')) {
       sessionManager.updateSession(senderJid, { flowState: 'comprobante_mes' });
@@ -230,17 +228,15 @@ function processWhatsAppMessage(senderJid, textInput) {
   }
 
   if (state === 'comprobante_mes') {
-    const cedula = session.employee?.cedula || '1010101010';
     sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-    return `📄 Tu desprendible de nómina de *${text}* está disponible:\n🔗 https://medicalsupplies.example.com/nomina/${cedula}-${encodeURIComponent(text)}.pdf\n\n` + getAfterActionPrompt();
+    return `📄 Tu desprendible de nómina de *${text}* está disponible para descarga:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
   }
 
   // sub_certificado
   if (state === 'sub_certificado') {
-    const cedula = session.employee?.cedula || '1010101010';
     if (text === '1' || text === '2' || lower.includes('general') || lower.includes('salario')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `✅ Tu certificado estará disponible para descarga:\n🔗 https://medicalsupplies.example.com/certificados/${cedula}.pdf\n\n` + getAfterActionPrompt();
+      return `✅ Tu certificado estará disponible para descarga en:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '3' || lower.includes('entidad')) {
       sessionManager.updateSession(senderJid, { flowState: 'certificado_entidad' });
@@ -253,9 +249,8 @@ function processWhatsAppMessage(senderJid, textInput) {
   }
 
   if (state === 'certificado_entidad') {
-    const cedula = session.employee?.cedula || '1010101010';
     sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-    return `✅ Tu certificado dirigido a *${text}* está disponible para descarga:\n🔗 https://medicalsupplies.example.com/certificados/${cedula}.pdf\n\n` + getAfterActionPrompt();
+    return `✅ Tu certificado dirigido a *${text}* está disponible para descarga en:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
   }
 
   // vacaciones_ask
@@ -263,7 +258,7 @@ function processWhatsAppMessage(senderJid, textInput) {
     const name = session.employee?.nombre || 'Colaborador';
     if (text === '1' || lower.includes('si') || lower.includes('sí')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `📄 Excelente. Puedes descargar e imprimir el formato oficial de solicitud de vacaciones en el siguiente enlace:\n🔗 https://medicalsupplies.example.com/formatos/solicitud-vacaciones.pdf\n\n` + getAfterActionPrompt();
+      return `📄 Excelente. Puedes descargar e imprimir el formato oficial de solicitud de vacaciones en el siguiente enlace:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '2' || lower.includes('no')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
@@ -297,7 +292,7 @@ function processWhatsAppMessage(senderJid, textInput) {
     if (text === '1' || lower.includes('si') || lower.includes('sí')) {
       const rad = generateRadicado('CES');
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `✅ Solicitud de retiro de cesantías radicada exitosamente.\n📌 *Radicado:* \`${rad}\`\n\nRecibirás las instrucciones de entrega de documentos en tu correo corporativo.\n\n` + getAfterActionPrompt();
+      return `✅ Solicitud de retiro de cesantías radicada exitosamente.\n📌 *Radicado:* \`${rad}\`\n\nRecibirás las instrucciones de entrega de documentos en tu correo corporativo MS Corp.\n\n` + getAfterActionPrompt();
     }
     sessionManager.updateSession(senderJid, { flowState: 'main_menu' });
     return getMainMenuText();
@@ -314,12 +309,12 @@ function processWhatsAppMessage(senderJid, textInput) {
 
     if (text === '2' || lower.includes('escucha')) {
       sessionManager.updateSession(senderJid, { flowState: 'zona_escucha' });
-      return `🎧 *Zona de Escucha*\nAcompañamiento con Daniela Ríos (Psicóloga · Bienestar Laboral)\n🔒 _Espacio confidencial · 100% virtual_\n\nTe enlazo con *Dani*, nuestra psicóloga del área de Bienestar. Ella te contactará por este mismo canal en breve.\n\n🔗 Sala virtual: https://meet.medicalsupplies.example.com/zona-escucha/dani\n\nSi lo prefieres, puedes escribirle directamente a *dani.rios@medicalsupplies.example.com*.\n\n*1.* Volver al menú principal\n*2.* Finalizar conversación`;
+      return `🎧 *Zona de Escucha*\nAcompañamiento con Daniela Ríos (Psicóloga · Bienestar Laboral MS Corp)\n🔒 _Espacio confidencial · 100% virtual_\n\nTe enlazo con *Dani*, nuestra psicóloga del área de Bienestar. Ella te contactará por este mismo canal en breve.\n\n🔗 Sala virtual: https://mscorp.com.co/\n\nSi lo prefieres, puedes escribirle directamente a *dani.rios@mscorp.com.co*.\n\n*1.* Volver al menú principal\n*2.* Finalizar conversación`;
     }
 
     if (text === '3' || lower.includes('ver_todos')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `🎁 *Beneficios vigentes para colaboradores de Medical Supplies:*\n• Plan complementario de salud\n• Auxilio educativo para hijos\n• Día libre de cumpleaños\n• Descuentos con aliados comerciales\n• Programa de bienestar mental\n• Moneda de cultura\n• Zona de escucha (acompañamiento psicológico)\n\n🔗 Más información: https://medicalsupplies.example.com/beneficios\n\n` + getAfterActionPrompt();
+      return `🎁 *Beneficios vigentes para colaboradores de Medical Supplies Corp:*\n• Plan complementario de salud\n• Auxilio educativo para hijos\n• Día libre de cumpleaños\n• Descuentos con aliados comerciales (Fundación Santa Fe, Shaio, Las Américas, etc.)\n• Programa de bienestar mental\n• Moneda de cultura\n• Zona de escucha (acompañamiento psicológico)\n\n🔗 Más información: https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
 
     if (text === '4' || lower.includes('volver')) {
@@ -358,8 +353,6 @@ function processWhatsAppMessage(senderJid, textInput) {
   // 7.4 SUBMENÚ REPORTES (menu_reportes)
   // -------------------------------------------------------------
   if (state === 'menu_reportes') {
-    const name = session.employee?.nombre || 'Colaborador';
-
     if (text === '1' || lower.includes('ausentismo')) {
       sessionManager.updateSession(senderJid, { flowState: 'ausentismo_tipo' });
       return `Has seleccionado: *Reportar un ausentismo*. Por favor selecciona el tipo:\n\n*1.* Incapacidad médica\n*2.* Cita médica\n*3.* Calamidad doméstica\n*4.* Permiso personal\n*5.* Otro motivo\n*6.* Volver al menú anterior`;
@@ -454,31 +447,31 @@ function processWhatsAppMessage(senderJid, textInput) {
   if (state === 'menu_institucional') {
     if (text === '1' || lower.includes('rit')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `El *Reglamento Interno de Trabajo* contiene las normas, derechos, deberes y disposiciones que regulan la relación laboral dentro de Medical Supplies.\n🔗 https://medicalsupplies.example.com/rit.pdf\n\n` + getAfterActionPrompt();
+      return `El *Reglamento Interno de Trabajo* contiene las normas, derechos, deberes y disposiciones que regulan la relación laboral dentro de Medical Supplies Corp.\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '2' || lower.includes('etica')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `Este programa promueve una cultura basada en la integridad, la transparencia y el cumplimiento de las normas internas y externas.\n🔗 https://medicalsupplies.example.com/etica\n\n` + getAfterActionPrompt();
+      return `Este programa promueve una cultura basada en la integridad, la transparencia y el cumplimiento de las normas internas y externas.\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '3' || lower.includes('cocola')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `🤝 *Comité de Convivencia Laboral (COCOLA):*\n• Andrea Gómez (Presidenta)\n• Carlos Ramírez (Secretario)\n• Diana López (Vocal)\n• Jorge Pérez (Vocal)\n\n` + getAfterActionPrompt();
+      return `🤝 *Comité de Convivencia Laboral (COCOLA MS Corp):*\n• Andrea Gómez (Presidenta)\n• Carlos Ramírez (Secretario)\n• Diana López (Vocal)\n• Jorge Pérez (Vocal)\n\n` + getAfterActionPrompt();
     }
     if (text === '4' || lower.includes('copasst')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `⛑️ *Comité Paritario SST (COPASST):*\n• Laura Martínez (Presidenta)\n• Mauricio Vega (Secretario)\n• Sandra Ríos (Vocal)\n• Felipe Torres (Vocal)\n\n` + getAfterActionPrompt();
+      return `⛑️ *Comité Paritario SST (COPASST MS Corp):*\n• Laura Martínez (Presidenta)\n• Mauricio Vega (Secretario)\n• Sandra Ríos (Vocal)\n• Felipe Torres (Vocal)\n\n` + getAfterActionPrompt();
     }
     if (text === '5' || lower.includes('brigada')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `🚑 *Brigada de Emergencias:*\n• Jefe de brigada: Andrés Mejía\n• Primeros auxilios: Paula Niño\n• Evacuación: Camilo Suárez\n• Control de incendios: Natalia Acosta\n\n` + getAfterActionPrompt();
+      return `🚑 *Brigada de Emergencias MS Corp:*\n• Jefe de brigada: Andrés Mejía\n• Primeros auxilios: Paula Niño\n• Evacuación: Camilo Suárez\n• Control de incendios: Natalia Acosta\n\n` + getAfterActionPrompt();
     }
     if (text === '6' || lower.includes('boletin')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `📰 Conoce el último boletín institucional:\n🔗 https://medicalsupplies.example.com/boletin\n\n` + getAfterActionPrompt();
+      return `📰 Conoce el último boletín institucional de Medical Supplies:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '7' || lower.includes('calendario')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `📅 Calendario institucional activo:\n🔗 https://medicalsupplies.example.com/calendario\n\n` + getAfterActionPrompt();
+      return `📅 Calendario institucional activo:\n🔗 https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '8' || lower.includes('volver')) {
       sessionManager.updateSession(senderJid, { flowState: 'main_menu' });
@@ -492,7 +485,7 @@ function processWhatsAppMessage(senderJid, textInput) {
   if (state === 'menu_eventos') {
     if (text === '1' || lower.includes('bienestar')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `🌿 *Próximos Eventos de Bienestar:*\n• Pausa activa guiada — 📅 12/06/2026 10:00 a.m. — Auditorio principal\n• 🧘 Taller de manejo del estrés — 📅 20/06/2026 3:00 p.m. — Virtual (Zoom)\n\n` + getAfterActionPrompt();
+      return `🌿 *Próximos Eventos de Bienestar MS Corp:*\n• Pausa activa guiada — 📅 12/06/2026 10:00 a.m. — Auditorio principal\n• 🧘 Taller de manejo del estrés — 📅 20/06/2026 3:00 p.m. — Virtual (Zoom)\n\n` + getAfterActionPrompt();
     }
     if (text === '2' || lower.includes('formacion')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
@@ -500,11 +493,11 @@ function processWhatsAppMessage(senderJid, textInput) {
     }
     if (text === '3' || lower.includes('sst')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `🦺 *Eventos SST:*\n• Simulacro de evacuación — 18/06/2026 11:00 a.m. — Sede principal\n• 🚑 Capacitación en primeros auxilios — 28/06/2026 10:00 a.m. — Auditorio principal\n\n` + getAfterActionPrompt();
+      return `🦺 *Eventos SST MS Corp:*\n• Simulacro de evacuación — 18/06/2026 11:00 a.m. — Sede principal\n• 🚑 Capacitación en primeros auxilios — 28/06/2026 10:00 a.m. — Auditorio principal\n\n` + getAfterActionPrompt();
     }
     if (text === '4' || lower.includes('calendario')) {
       sessionManager.updateSession(senderJid, { flowState: 'after_action' });
-      return `📅 *Calendario General:* https://medicalsupplies.example.com/calendario\n\n` + getAfterActionPrompt();
+      return `📅 *Calendario General:* https://mscorp.com.co/\n\n` + getAfterActionPrompt();
     }
     if (text === '5' || lower.includes('volver')) {
       sessionManager.updateSession(senderJid, { flowState: 'main_menu' });
@@ -523,7 +516,7 @@ function processWhatsAppMessage(senderJid, textInput) {
 
     if (text === '2' || lower.includes('no')) {
       sessionManager.updateSession(senderJid, { flowState: 'ext_denied' });
-      return `Entendemos tu decisión. Para proteger tus datos, no podemos continuar la atención por este canal automatizado.\nPuedes contactar directamente a *recepción* en nuestras oficinas físicas. ¡Feliz día!`;
+      return `Entendemos tu decisión. Para proteger tus datos, no podemos continuar la atención por este canal automatizado.\nPuedes contactar directamente a *recepción* en nuestras oficinas de Medical Supplies. ¡Feliz día!`;
     }
 
     return `Por favor selecciona una opción válida:\n\n*1.* Sí, autorizo\n*2.* No autorizo`;
@@ -532,7 +525,7 @@ function processWhatsAppMessage(senderJid, textInput) {
   if (state === 'ext_menu') {
     if (text === '1' || lower.includes('vacante')) {
       sessionManager.updateSession(senderJid, { flowState: 'ext_vacantes' });
-      return `Currently tenemos vacantes disponibles en nuestras diferentes áreas. Puedes consultar los perfiles y postularte en nuestro portal de empleo autorizado:\n\n🔗 https://medicalsupplies.example.com/empleos\n\n*1.* Volver al menú de externos\n*2.* Finalizar conversación`;
+      return `Actualmente tenemos vacantes disponibles en nuestras diferentes áreas de dispositivos médicos. Puedes consultar los perfiles y postularte en nuestro portal de empleo autorizado:\n\n🔗 https://mscorp.com.co/\n\n*1.* Volver al menú de externos\n*2.* Finalizar conversación`;
     }
 
     if (text === '2' || lower.includes('cert')) {
@@ -570,7 +563,7 @@ function processWhatsAppMessage(senderJid, textInput) {
 
     if (ex) {
       sessionManager.updateSession(senderJid, { flowState: 'ext_menu' });
-      return `✅ Registro encontrado:\n• *Nombre:* ${ex.nombre}\n• *Cargo final:* ${ex.cargoFinal}\n• *Periodo:* ${ex.periodo}\n\nDescarga tu certificado histórico aquí:\n🔗 https://medicalsupplies.example.com/certificados-hist/${ced}.pdf\n\n¿Deseas realizar otra consulta?`;
+      return `✅ Registro encontrado en Medical Supplies Corp:\n• *Nombre:* ${ex.nombre}\n• *Cargo final:* ${ex.cargoFinal}\n• *Periodo:* ${ex.periodo}\n\nDescarga tu certificado histórico aquí:\n🔗 https://mscorp.com.co/\n\n¿Deseas realizar otra consulta?`;
     } else {
       sessionManager.updateSession(senderJid, { flowState: 'ext_cert_escalado', tempData: { cedula: ced } });
       return `No hemos encontrado un registro automático inmediato.\nPor favor, escribe tu *nombre completo* y un *correo electrónico* de contacto en un solo mensaje para escalar tu caso con un analista.`;
@@ -594,7 +587,7 @@ function processWhatsAppMessage(senderJid, textInput) {
     sessionManager.updateSession(senderJid, { flowState: 'ext_menu' });
 
     if (!cand) {
-      return `No encontramos un proceso de selección asociado a esta cédula.\n🔗 Conoce nuevas vacantes en: https://medicalsupplies.example.com/empleos\n\n¿Deseas realizar otra consulta?\n\n` + getExternosMenuText();
+      return `No encontramos un proceso de selección asociado a esta cédula.\n🔗 Conoce nuevas vacantes en: https://mscorp.com.co/\n\n¿Deseas realizar otra consulta?\n\n` + getExternosMenuText();
     }
 
     if (cand.activo) {
@@ -623,9 +616,9 @@ function processWhatsAppMessage(senderJid, textInput) {
   return `La opción ingresada no es válida. Por favor selecciona una de las opciones disponibles en el menú.\n\n` + getMainMenuText();
 }
 
-// MESSAGES & PROMPTS SPECIFICATION MATCH (§7)
+// MESSAGES & PROMPTS SPECIFICATION MATCH WITH REAL CORPORATE INFO
 function getM01Welcome() {
-  return `Hola, bienvenido al canal institucional de *Talento Humano* de Medical Supplies.\n\nSoy tu asistente virtual de Talento Humano y estoy aquí para ayudarte con consultas, reportes y solicitudes.\n\nPara brindarte una mejor atención, por favor selecciona tu perfil:\n\n*1.* Soy Colaborador Activo de Medical Supplies\n*2.* Soy Personal Externo (candidatos, excolaboradores o terceros)`;
+  return `Hola, bienvenido al canal institucional de *Talento Humano* de Medical Supplies Corp (mscorp.com.co).\n\nSoy tu asistente virtual de Talento Humano y estoy aquí para ayudarte con consultas, reportes y solicitudes.\n\nPara brindarte una mejor atención, por favor selecciona tu perfil:\n\n*1.* Soy Colaborador Activo de Medical Supplies\n*2.* Soy Personal Externo (candidatos, excolaboradores o terceros)`;
 }
 
 function getMainMenuText() {
@@ -649,7 +642,7 @@ function getEventosMenuText(name) {
 }
 
 function getExternosMenuText() {
-  return `Por favor selecciona la opción que deseas gestionar:\n\n*1.* Conocer convocatorias laborales abiertas (Vacantes)\n*2.* Solicitar certificado laboral (Excolaboradores)\n*3.* Hacer seguimiento a mi proceso de selección\n*4.* Finalizar conversación`;
+  return `Por favor selecciona la opción que deseas gestionar:\n\n*1.* Conocer convocatorias laborales abiertas (Vacantes MS Corp)\n*2.* Solicitar certificado laboral (Excolaboradores)\n*3.* Hacer seguimiento a mi proceso de selección\n*4.* Finalizar conversación`;
 }
 
 function getAfterActionPrompt() {
@@ -657,7 +650,7 @@ function getAfterActionPrompt() {
 }
 
 function getEndedMessage(name) {
-  return `Gracias por comunicarte con el *asistente virtual de Talento Humano* de Medical Supplies${name ? `, *${name}*` : ''}.\n\nTu solicitud ha sido gestionada correctamente.\n\nRecuerda que este canal está disponible para apoyarte con consultas, reportes y trámites internos.\n\nQue tengas un excelente día. 👋`;
+  return `Gracias por comunicarte con el *asistente virtual de Talento Humano* de Medical Supplies Corp${name ? `, *${name}*` : ''}.\n\nTu solicitud ha sido gestionada correctamente.\n\nRecuerda que este canal está disponible para apoyarte con consultas, reportes y trámites internos.\n\n🔗 Web Oficial: https://mscorp.com.co\n\nQue tengas un excelente día. 👋`;
 }
 
 module.exports = {

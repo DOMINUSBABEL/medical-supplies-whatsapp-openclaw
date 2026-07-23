@@ -4,13 +4,13 @@ const path = require('path');
 const CONFIG_FILE = path.join(__dirname, '..', 'bot_config.json');
 
 const DEFAULT_CONFIG = {
-  companyName: 'Medical Supplies',
-  botName: 'Asistente Virtual de Talento Humano',
+  companyName: 'Medical Supplies Corp (mscorp.com.co)',
+  botName: 'Asistente Virtual de Talento Humano · MS Corp',
   autoReplyMode: 'all', // 'all', 'whitelist', 'manual'
   whitelistNumbers: [], // e.g. ['573001234567']
   sessionTimeoutMinutes: 15,
   logLevel: 'verbose',
-  welcomeGreeting: '👋 ¡Hola! Te damos la bienvenida al *Asistente Virtual de Talento Humano* de *Medical Supplies*.'
+  welcomeGreeting: 'Hola, bienvenido al canal institucional de *Talento Humano* de Medical Supplies Corp (mscorp.com.co).'
 };
 
 class ConfigManager {
