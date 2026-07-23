@@ -1,5 +1,5 @@
 # 🤖 Agente Conversacional de WhatsApp Autónomo (OpenClaw)
-> **Medical Supplies · Asistente Virtual de Talento Humano**
+> **Medical Supplies Corp (mscorp.com.co) · Asistente Virtual de Talento Humano**
 > *Sistema independiente ejecutable en cualquier terminal o computador remoto*
 
 [![NodeJS](https://img.shields.io/badge/Node.js-v18%2B-green.svg)](https://nodejs.org)
@@ -10,15 +10,7 @@
 
 ## 📌 Visión General
 
-Este repositorio contiene la **implementación autónoma e independiente** del agente conversacional de Talento Humano para **Medical Supplies**. Permite desplegar un asistente inteligente que responde automáticamente mensajes de WhatsApp en tiempo real desde cualquier terminal en cualquier computadora (Windows, Linux o macOS), **sin depender de entornos IDE ni herramientas externas**.
-
----
-
-## 🛠️ Requisitos Previos en cualquier PC
-
-1. **Node.js** v18.0.0 o superior ([Descargar Node.js](https://nodejs.org)).
-2. **Git** ([Descargar Git](https://git-scm.com)).
-3. Un teléfono móvil con WhatsApp activo para escanear el Código QR inicial.
+Este repositorio contiene la **implementación autónoma e independiente** del agente conversacional de Talento Humano para **Medical Supplies Corp** ([mscorp.com.co](https://mscorp.com.co/)). Permite desplegar un asistente inteligente que responde automáticamente mensajes de WhatsApp en tiempo real desde cualquier terminal en cualquier computadora (Windows, Linux o macOS), **sin depender de entornos IDE ni herramientas externas**.
 
 ---
 
@@ -46,24 +38,46 @@ cd medical-supplies-whatsapp-openclaw
   ./start-standalone.sh
   ```
 
-- **Ejecución estándar manual con Node.js**:
-  ```bash
-  npm install
-  npm start
+---
+
+## 🔄 Cómo Actualizar a la Última Versión en Dispositivos Existentes
+
+Si ya tienes el proyecto instalado en otra computadora y deseas **actualizarlo a la versión más reciente** publicada en GitHub:
+
+### Opción 1-Click Automática:
+
+- **En Windows**:
+  Haz doble clic en `update-latest.bat` o ejecuta en PowerShell:
+  ```powershell
+  .\update-latest.bat
   ```
+
+- **En Linux / macOS**:
+  ```bash
+  chmod +x update-latest.sh
+  ./update-latest.sh
+  ```
+
+### Opción Manual mediante Comandos:
+Abre la terminal en la carpeta del proyecto en el dispositivo remoto y ejecuta:
+```bash
+git pull origin master
+npm install
+npm start
+```
 
 ---
 
 ## 🖥️ Menú de Onboarding Interactivo
 
-Al arrancar el sistema en el nuevo equipo, se abrirá de forma automática el **Dashboard de Onboarding**:
+Al arrancar el sistema en el equipo remoto, se abrirá de forma automática el **Dashboard de Onboarding**:
 
 ```text
 ========================================================================
   🤖 OPENCLAW WHATSAPP AGENT - MEDICAL SUPPLIES TALENTO HUMANO
 ========================================================================
-  [Empresa]: Medical Supplies
-  [Agente]:  Asistente Virtual de Talento Humano
+  [Empresa]: Medical Supplies Corp (mscorp.com.co)
+  [Agente]:  Asistente Virtual de Talento Humano · MS Corp
   [Modo]:    ALL (Responde a todos los chats de WhatsApp)
 ========================================================================
 
@@ -86,18 +100,6 @@ Al arrancar el sistema en el nuevo equipo, se abrirá de forma automática el **
 
 ---
 
-## 💡 Cédulas de Prueba Institucionales
-
-| Cédula Demo | Nombre | Cargo | Días Vacaciones |
-| :--- | :--- | :--- | :--- |
-| **`1010101010`** | Carlos Andrés Pérez | Analista de Quirófano | 14 Días |
-| **`2020202020`** | María Fernanda Gómez | Coordinadora Logística Médica | 8 Días |
-| **`3030303030`** | Juan Esteban Restrepo | Especialista Equipos Quirúrgicos | 22 Días |
-| **`5050505050`** | Roberto Silva | Excolaborador | Trámites Ex-empleados |
-| **`7070707070`** | Laura Botero | Candidata Selección | Seguimiento Vacante |
-
----
-
 ## 📂 Estructura Interna del Proyecto
 
 ```text
@@ -105,18 +107,15 @@ medical-supplies-whatsapp-openclaw/
 ├── src/
 │   ├── openclaw-whatsapp-bot.js  # Servidor principal Baileys & socket listener
 │   ├── onboarding-wizard.js      # Dashboard interactivo CLI onboarding
-│   ├── state-machine.js          # Lógica conversacional, menúes y tarjetas
-│   ├── session-manager.js        # Aislamiento de sesiones persistentes
+│   ├── state-machine.js          # Lógica conversacional, menúes y tarjetas ASCII
+│   ├── session-manager.js        # Aislamiento de sesiones en disco
 │   ├── config-manager.js         # Gestor de configuración persistente
 │   └── simulator-cli.js          # Simulador de terminal sin celular
 ├── start-standalone.bat          # Lanzador automático 1-Click para Windows
 ├── start-standalone.sh           # Lanzador automático 1-Click para Linux/macOS
+├── update-latest.bat             # Actualizador automático 1-Click para Windows
+├── update-latest.sh              # Actualizador automático 1-Click para Linux/macOS
 ├── .gitignore                    # Exclusión de llaves privadas y node_modules
 ├── package.json
 └── README.md
 ```
-
----
-
-## 🔒 Licencia y Seguridad
-Este proyecto excluye automáticamente del control de versiones las carpetas de credenciales (`whatsapp_auth_info/`) y sesiones privadas para garantizar que no se compartan tokens ni claves secretas al clonar en otro equipo.
