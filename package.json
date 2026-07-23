@@ -1,0 +1,25 @@
+{
+  "name": "medical-supplies-whatsapp-openclaw",
+  "version": "1.0.0",
+  "description": "Protocolo de Integración WhatsApp para Agente Conversacional de Talento Humano en OpenClaw",
+  "main": "src/openclaw-whatsapp-bot.js",
+  "scripts": {
+    "start": "node src/openclaw-whatsapp-bot.js",
+    "simulate": "node src/simulator-cli.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "openclaw",
+    "bot",
+    "baileys",
+    "talento-humano"
+  ],
+  "author": "Antigravity & OpenClaw",
+  "license": "ISC",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.18",
+    "dotenv": "^16.4.7",
+    "pino": "^9.6.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
