@@ -78,16 +78,23 @@ function processWhatsAppMessage(senderJid, textInput) {
   const text = (textInput || '').trim();
   const lower = text.toLowerCase();
 
-  // Reset or Global restart triggers
+  // 1. Reset o Reinicio explicito
   if (lower === 'reiniciar' || lower === 'reset') {
     sessionManager.resetSession(senderJid);
     return formatResponse(getM01Welcome(), true);
   }
 
-  // If conversation already ended and user types anything, restart with welcome
+  // 2. Si la sesión ya había terminado o fue rechazada, reiniciar limpia con bienvenida
   if (session.flowState === 'ended' || session.flowState === 'not_active' || session.flowState === 'consent_denied' || session.flowState === 'ext_denied') {
     sessionManager.resetSession(senderJid);
     return formatResponse(getM01Welcome(), true);
+  }
+
+  // 3. UX ENTERPRISE: Si el colaborador ya se autenticó previamente y envía saludos o la palabra 'menu' / 'inicio' / 'cancelar'
+  if (session.employee && (lower === 'menu' || lower === 'menú' || lower === 'inicio' || lower === 'hola' || lower === 'buenas' || lower === 'cancelar')) {
+    sessionManager.updateSession(senderJid, { flowState: 'main_menu', currentCategory: 'menu_principal' });
+    const name = session.employee.nombre;
+    return formatResponse(`👋 ¡Hola de nuevo, *${name}*!\n\n¿En qué te podemos ayudar hoy en el canal de Talento Humano MS Corp?\n\n` + getMainMenuText(), true);
   }
 
   const state = session.flowState;
@@ -118,8 +125,8 @@ function processWhatsAppMessage(senderJid, textInput) {
   // 7.2 RUTA COLABORADOR: ask_cedula & validating (CON UNIFICACIÓN DE CADENA)
   // -------------------------------------------------------------
   if (state === 'ask_cedula') {
-    // BUGFIX: Si el usuario vuelve a enviar "1", "colaborador" o saludos mientras está en ask_cedula,
-    // NO tratar "1" como error de cédula corta ni trabar la cadena de mensajes.
+    // Si el usuario vuelve a enviar "1", "colaborador" o saludos mientras está en ask_cedula,
+    // responder amigablemente recordando ingresar la cédula.
     const optionRepeat = matchInput(text, {
       colaborador: ['1', 'colaborador', 'empleado', '👨‍💼', '💼'],
       greeting: ['hola', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches', '👋']
