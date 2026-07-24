@@ -99,6 +99,7 @@ async function startOpenClawWhatsAppBot() {
         console.log(`📱 Número Vinculado: [${userJid}]`);
         console.log(`🏢 Empresa: ${configManager.get('companyName')}`);
         console.log(`🤖 Agente: ${configManager.get('botName')}`);
+        console.log(`🔑 Comando de Activación Requerido: "!Hola"`);
         console.log(`⚙️ Modo de Respuesta: ${configManager.get('autoReplyMode').toUpperCase()}`);
         console.log(`⏱️ Delay entre respuestas: 5 Segundos (Simulación Humana & Anti-solapamiento)`);
         console.log(`💬 Escuchando mensajes entrantes en tiempo real...\n`);
@@ -135,6 +136,13 @@ async function startOpenClawWhatsAppBot() {
 
           // Encolar y procesar con delay estricto de 5 segundos para evitar solapamientos
           enqueueMessage(senderJid, async () => {
+            // Verificar si el mensaje activa o continúa la conversación
+            const responseObj = processWhatsAppMessage(senderJid, messageText);
+            if (!responseObj) {
+              console.log(`🤫 [Mensaje Ignorado] [${cleanSenderNumber}]: "${messageText}" (Se requiere "!Hola" para activar el asistente)`);
+              return;
+            }
+
             // 1. Mostrar estado "escribiendo..." en WhatsApp
             try {
               await sock.sendPresenceUpdate('composing', senderJid);
@@ -143,8 +151,6 @@ async function startOpenClawWhatsAppBot() {
             // 2. Esperar 5 segundos exactos (delay humano entre respuesta y solicitud)
             await new Promise(resolve => setTimeout(resolve, 5000));
 
-            // 3. Procesar mensaje en la máquina de estados
-            const responseObj = processWhatsAppMessage(senderJid, messageText);
             const textContent = typeof responseObj === 'string' ? responseObj : responseObj.text;
             const imageUrl = typeof responseObj === 'object' ? responseObj.imageUrl : null;
 
@@ -154,7 +160,7 @@ async function startOpenClawWhatsAppBot() {
               return;
             }
 
-            // 4. Enviar mensaje por WhatsApp con tolerancia a fallos de imagen
+            // 3. Enviar mensaje por WhatsApp con tolerancia a fallos de imagen
             let sentSuccessfully = false;
             if (imageUrl) {
               try {
@@ -176,7 +182,7 @@ async function startOpenClawWhatsAppBot() {
               console.log(`🤖 Respuesta de texto enviada a [${cleanSenderNumber}] (5s delay)`);
             }
 
-            // 5. Restablecer estado de presencia
+            // 4. Restablecer estado de presencia
             try {
               await sock.sendPresenceUpdate('paused', senderJid);
             } catch (e) {}
@@ -195,18 +201,15 @@ async function startOpenClawWhatsAppBot() {
 }
 
 function startSimulator() {
-  const { processWhatsAppMessage, getM01Welcome } = require('./state-machine');
+  const { processWhatsAppMessage } = require('./state-machine');
   const readline = require('readline');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const TEST_JID = '573001234567@s.whatsapp.net';
 
   console.log('\n===============================================================');
   console.log('📱 SIMULADOR DE CONSOLA - AGENTE WHATSAPP (MEDICAL SUPPLIES CORP)');
-  console.log('===============================================================\n');
-  
-  const initRes = getM01Welcome();
-  const welcomeText = typeof initRes === 'string' ? initRes : initRes.text;
-  console.log('🤖 BOT WHATSAPP:\n' + welcomeText + '\n');
+  console.log('===============================================================');
+  console.log('💡 Escribe "!Hola" para iniciar la conversación con el asistente.\n');
 
   function promptUser() {
     rl.question('👤 TÚ: ', (ans) => {
@@ -214,9 +217,14 @@ function startSimulator() {
         rl.close();
         process.exit(0);
       }
+      const res = processWhatsAppMessage(TEST_JID, ans);
+      if (!res) {
+        console.log('🤫 [Bot en reposo: Mensaje ignorado. Escribe "!Hola" para activar]');
+        promptUser();
+        return;
+      }
       console.log('⏳ (Simulando delay de 5 segundos en consola...)');
       setTimeout(() => {
-        const res = processWhatsAppMessage(TEST_JID, ans);
         const text = typeof res === 'string' ? res : res.text;
         const img = typeof res === 'object' && res.imageUrl ? ` [🖼️ Imagen: ${res.imageUrl}]` : '';
         console.log('\n🤖 BOT WHATSAPP' + img + ':\n' + text + '\n');

@@ -72,32 +72,46 @@ function formatResponse(text, sendImage = false) {
   };
 }
 
+// ACTIVATION KEYWORD CHECK: !hola / !Hola / !HOLA
+function isActivationKeyword(text) {
+  if (!text) return false;
+  const lower = text.trim().toLowerCase();
+  return lower === '!hola' || lower.startsWith('!hola ') || lower.startsWith('!hola,');
+}
+
 // 7. STATE MACHINE MAIN HANDLER (§7)
 function processWhatsAppMessage(senderJid, textInput) {
   const session = sessionManager.getSession(senderJid);
   const text = (textInput || '').trim();
   const lower = text.toLowerCase();
+  const state = session.flowState;
 
-  // 1. Reset o Reinicio explicito
-  if (lower === 'reiniciar' || lower === 'reset') {
+  const isInactiveState = !state || state === 'welcome' || state === 'ended' || state === 'not_active' || state === 'consent_denied' || state === 'ext_denied';
+
+  // 1. SI LA SESIÓN ESTÁ INACTIVA O NUEVA: Requerir estrictamente el comando !Hola para activar el agente
+  if (isInactiveState) {
+    if (isActivationKeyword(text) || lower === 'reiniciar' || lower === 'reset') {
+      sessionManager.resetSession(senderJid);
+      sessionManager.updateSession(senderJid, { flowState: 'profile_select' });
+      return formatResponse(getM01Welcome(), true);
+    }
+    // Si NO es !Hola, ignorar el mensaje completamente (devuelve null)
+    return null;
+  }
+
+  // 2. Si la sesión está activa y el usuario envía !Hola, reinicia limpia al menú inicial
+  if (isActivationKeyword(text) || lower === 'reiniciar' || lower === 'reset') {
     sessionManager.resetSession(senderJid);
+    sessionManager.updateSession(senderJid, { flowState: 'profile_select' });
     return formatResponse(getM01Welcome(), true);
   }
 
-  // 2. Si la sesión ya había terminado o fue rechazada, reiniciar limpia con bienvenida
-  if (session.flowState === 'ended' || session.flowState === 'not_active' || session.flowState === 'consent_denied' || session.flowState === 'ext_denied') {
-    sessionManager.resetSession(senderJid);
-    return formatResponse(getM01Welcome(), true);
-  }
-
-  // 3. UX ENTERPRISE: Si el colaborador ya se autenticó previamente y envía saludos o la palabra 'menu' / 'inicio' / 'cancelar'
-  if (session.employee && (lower === 'menu' || lower === 'menú' || lower === 'inicio' || lower === 'hola' || lower === 'buenas' || lower === 'cancelar')) {
+  // 3. UX ENTERPRISE: Si el colaborador ya se autenticó previamente y envía la palabra 'menu' / 'inicio' / 'cancelar'
+  if (session.employee && (lower === 'menu' || lower === 'menú' || lower === 'inicio' || lower === 'cancelar')) {
     sessionManager.updateSession(senderJid, { flowState: 'main_menu', currentCategory: 'menu_principal' });
     const name = session.employee.nombre;
     return formatResponse(`¡Hola de nuevo, *${name}*!\n\n¿En qué te podemos ayudar hoy en el canal de Talento Humano MS Corp?\n\n` + getMainMenuText(), true);
   }
-
-  const state = session.flowState;
 
   // -------------------------------------------------------------
   // 7.1 welcome / profile_select
